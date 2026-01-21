@@ -27,8 +27,8 @@ Then just run `pui`.
 
 ## Notes
 
-- macOS only (for now)
-- Works without sudo (shows your own processes)
+- macOS only (uses `psutil.net_connections` which requires elevated privileges on Linux/Windows)
+- Works without elevated privileges (shows your own processes)
 - Use `sudo pui` to see and kill all system processes
 
 ---
