@@ -1,8 +1,5 @@
 """PUI - Process Port Manager: A TUI for managing processes listening on ports."""
 
-import signal
-import subprocess
-
 import psutil
 from textual import work
 from textual.app import App, ComposeResult
@@ -13,7 +10,7 @@ from textual.widgets import DataTable, Footer, Header, Label, Static
 
 
 def get_port_processes() -> list[tuple[int, int, str, str]]:
-    """Fetch all processes listening on ports using lsof.
+    """Fetch all processes listening on ports using psutil.
 
     Returns:
         List of tuples containing (port, pid, process_name, status).
@@ -22,49 +19,26 @@ def get_port_processes() -> list[tuple[int, int, str, str]]:
     seen_ports: set[int] = set()
 
     try:
-        result = subprocess.run(
-            ["/usr/sbin/lsof", "-iTCP", "-sTCP:LISTEN", "-n", "-P"],
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if not result.stdout:
-            return processes
-        lines = result.stdout.strip().split("\n")[1:]  # Skip header
-    except (FileNotFoundError, subprocess.SubprocessError):
+        connections = psutil.net_connections(kind="tcp")
+    except psutil.AccessDenied:
         return processes
 
-    for line in lines:
-        if not line:
-            continue
-        parts = line.split()
-        if len(parts) < 9:
+    for conn in connections:
+        if conn.status != "LISTEN" or conn.pid is None:
             continue
 
-        process_name = parts[0]
-        try:
-            pid = int(parts[1])
-        except ValueError:
-            continue
-
-        # Parse port from NAME column (e.g., "*:3000" or "127.0.0.1:8080")
-        # The NAME column is second to last (last is "(LISTEN)")
-        name_col = parts[-2]
-        if ":" not in name_col:
-            continue
-
-        port_str = name_col.split(":")[-1]
-        try:
-            port = int(port_str)
-        except ValueError:
-            continue
-
+        port = conn.laddr.port
         if port in seen_ports:
             continue
         seen_ports.add(port)
 
-        processes.append((port, pid, process_name, "LISTEN"))
+        try:
+            proc = psutil.Process(conn.pid)
+            process_name = proc.name()
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            process_name = "unknown"
+
+        processes.append((port, conn.pid, process_name, "LISTEN"))
 
     return sorted(processes, key=lambda x: x[0])
 
@@ -239,8 +213,8 @@ class PortProcessApp(App[None]):
         """Terminate a process by PID."""
         try:
             process = psutil.Process(pid)
-            process.send_signal(signal.SIGTERM)
-            self._set_status(f"Sent SIGTERM to '{process_name}' (PID: {pid})")
+            process.terminate()
+            self._set_status(f"Terminated '{process_name}' (PID: {pid})")
             self._refresh_table()
         except psutil.NoSuchProcess:
             self._set_status(f"Process {pid} no longer exists")
