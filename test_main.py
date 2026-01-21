@@ -1,5 +1,6 @@
 """Tests for pui - Process Port Manager."""
 
+import shutil
 import socket
 import subprocess
 import sys
@@ -12,7 +13,11 @@ from main import get_port_processes
 
 
 def can_list_connections() -> bool:
-    """Check if we have permission to list network connections."""
+    """Check if we can list network connections (lsof or psutil)."""
+    # On Unix, we use lsof which works without sudo
+    if sys.platform != "win32" and shutil.which("lsof"):
+        return True
+    # On Windows or as fallback, check psutil
     try:
         psutil.net_connections(kind="tcp")
         return True
@@ -22,7 +27,7 @@ def can_list_connections() -> bool:
 
 requires_net_permissions = pytest.mark.skipif(
     not can_list_connections(),
-    reason="Requires elevated privileges to list network connections",
+    reason="Cannot list network connections (no lsof and psutil needs elevated privileges)",
 )
 
 

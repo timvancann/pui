@@ -29,11 +29,13 @@ Then just run `pui`.
 
 ## Platform Support
 
-| Platform | Status | Notes |
-| -------- | ------ | ----- |
-| Linux    | Works without elevated privileges | Reads from `/proc` |
-| macOS    | Requires `sudo pui` | psutil needs root |
-| Windows  | Works without Administrator | |
+Works without elevated privileges on all platforms.
+
+| Platform | Method |
+| -------- | ------ |
+| Linux    | lsof   |
+| macOS    | lsof   |
+| Windows  | psutil |
 
 ---
 
