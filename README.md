@@ -1,6 +1,8 @@
 # pui
 
-A tiny TUI for managing processes listening on ports. Select a process, kill it, move on with your life.
+[![Test](https://github.com/timvancann/pui/actions/workflows/test.yml/badge.svg)](https://github.com/timvancann/pui/actions/workflows/test.yml)
+
+A tiny cross-platform TUI for managing processes listening on ports. Select a process, kill it, move on with your life.
 
 ## Install
 
@@ -25,11 +27,13 @@ Then just run `pui`.
 | `r`   | Refresh               |
 | `q`   | Quit                  |
 
-## Notes
+## Platform Support
 
-- **Linux**: Works without elevated privileges
-- **macOS**: Requires `sudo pui` to list connections
-- **Windows**: Requires running as Administrator
+| Platform | Status | Notes |
+| -------- | ------ | ----- |
+| Linux    | Works without elevated privileges | Reads from `/proc` |
+| macOS    | Requires `sudo pui` | psutil needs root |
+| Windows  | Works without Administrator | |
 
 ---
 
