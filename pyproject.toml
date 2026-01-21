@@ -1,6 +1,6 @@
 [project]
 name = "pui"
-version = "0.4.0"
+version = "0.5.0"
 description = "TUI for managing processes listening on ports"
 readme = "README.md"
 requires-python = ">=3.12"
