@@ -27,6 +27,7 @@ Then just run `pui`.
 
 ## Notes
 
+- macOS only (for now)
 - Works without sudo (shows your own processes)
 - Use `sudo pui` to see and kill all system processes
 
